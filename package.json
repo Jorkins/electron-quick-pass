@@ -45,5 +45,25 @@
     "vite": "^8.3.4",
     "vue-eslint-parser": "^10.4.1",
     "vue-tsc": "^3.3.14"
+  },
+  "build": {
+    "appId": "com.jorkins.deskmind",
+    "productName": "DeskMind",
+    "files": [
+      "out/**",
+      "dist/**"
+    ],
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity"
+    },
+    "win": {
+      "target": "nsis",
+      "category": "Public"
+    },
+    "linux": {
+      "target": "AppImage",
+      "category": "Utility"
+    }
   }
 }
