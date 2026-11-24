@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1020">
+  <style>
+    text { font-family: 'JetBrains Mono', 'Noto Sans SC', 'PingFang SC', sans-serif; }
+    .title { font-size: 16px; font-weight: 700; fill: var(--text); }
+    .comp-name { font-size: 11px; font-weight: 600; fill: var(--text); }
+    .comp-sub { font-size: 8px; fill: var(--text-muted); }
+    .state-name { font-size: 11px; font-weight: 600; fill: var(--text); }
+    .arrow-label { font-size: 7px; fill: var(--text-muted); }
+    .legend-item { font-size: 9px; fill: var(--text); }
+  </style>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="var(--bg-grid)" stroke-width="0.5"/>
+    </pattern>
+    <marker id="arrow-primary" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="var(--color-primary-stroke)"/>
+    </marker>
+    <marker id="arrow-alert" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="var(--color-alert-stroke)"/>
+    </marker>
+    <marker id="arrow-open" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polyline points="0 0, 10 3.5, 0 7" fill="none" stroke="var(--arrow)" stroke-width="1.5"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="var(--bg)"/>
+  <rect width="100%" height="100%" fill="url(#grid)"/>
+
+  <!-- Start -->
+  <ellipse cx="360" cy="80" rx="30" ry="30" fill="var(--mask)"/>
+  <ellipse cx="360" cy="80" rx="30" ry="30" fill="var(--color-secondary-fill)" stroke="var(--color-secondary-stroke)" stroke-width="1.5"/>
+  <text x="360" y="84" fill="var(--text)" font-size="10" font-weight="600" text-anchor="middle">启动 Electron</text>
+
+  <!-- Line to app.whenReady -->
+  <line x1="360" y1="110" x2="360" y2="160" stroke="var(--color-secondary-stroke)" stroke-width="2" marker-end="url(#arrow-primary)"/>
+
+  <!-- app.whenReady() -->
+  <rect x="260" y="170" width="200" height="70" rx="6" fill="var(--mask)"/>
+  <rect x="260" y="170" width="200" height="70" rx="6" fill="var(--color-secondary-fill)" stroke="var(--color-secondary-stroke)" stroke-width="1.5"/>
+  <text x="360" y="198" fill="var(--text)" font-size="11" font-weight="600" text-anchor="middle">app.whenReady()</text>
+  <text x="360" y="212" fill="var(--text-muted)" font-size="8" text-anchor="middle">主进程就绪后触发</text>
+
+  <!-- Line to createWindow -->
+  <line x1="360" y1="240" x2="360" y2="300" stroke="var(--color-primary-stroke)" stroke-width="2" marker-end="url(#arrow-primary)"/>
+
+  <!-- createWindow() -->
+  <rect x="260" y="310" width="200" height="70" rx="6" fill="var(--mask)"/>
+  <rect x="260" y="310" width="200" height="70" rx="6" fill="var(--color-primary-fill)" stroke="var(--color-primary-stroke)" stroke-width="1.5"/>
+  <text x="360" y="338" fill="var(--text)" font-size="11" font-weight="600" text-anchor="middle">createWindow()</text>
+  <text x="360" y="352" fill="var(--text-muted)" font-size="8" text-anchor="middle">new BrowserWindow</text>
+
+  <!-- Line to BrowserWindow ready -->
+  <line x1="360" y1="380" x2="360" y2="440" stroke="var(--color-primary-stroke)" stroke-width="2" marker-end="url(#arrow-primary)"/>
+
+  <!-- BrowserWindow 就绪 / show -->
+  <rect x="260" y="450" width="200" height="70" rx="6" fill="var(--mask)"/>
+  <rect x="260" y="450" width="200" height="70" rx="6" fill="var(--color-primary-fill)" stroke="var(--color-primary-stroke)" stroke-width="1.5"/>
+  <text x="360" y="478" fill="var(--text)" font-size="11" font-weight="600" text-anchor="middle">ready-to-show</text>
+  <text x="360" y="492" fill="var(--text-muted)" font-size="8" text-anchor="middle">win.show() 显示窗口</text>
+
+  <!-- Line to 运行中 -->
+  <line x1="360" y1="520" x2="360" y2="580" stroke="var(--color-primary-stroke)" stroke-width="2" marker-end="url(#arrow-primary)"/>
+
+  <!-- 运行中 -->
+  <rect x="260" y="590" width="200" height="70" rx="6" fill="var(--mask)"/>
+  <rect x="260" y="590" width="200" height="70" rx="6" fill="var(--color-highlight-fill)" stroke="var(--color-highlight-stroke)" stroke-width="1.5"/>
+  <text x="360" y="618" fill="var(--text)" font-size="11" font-weight="600" text-anchor="middle">应用运行中</text>
+  <text x="360" y="632" fill="var(--text-muted)" font-size="8" text-anchor="middle">用户交互，窗口可见</text>
+
+  <!-- Line to 决策 -->
+  <line x1="360" y1="660" x2="360" y2="720" stroke="var(--color-alert-stroke)" stroke-width="2" marker-end="url(#arrow-primary)"/>
+
+  <!-- 决策：用户关闭窗口 (菱形) -->
+  <g transform="translate(360, 770)">
+    <polygon points="0,-45 90,0 0,45 -90,0" fill="var(--mask)"/>
+    <polygon points="0,-45 90,0 0,45 -90,0" fill="var(--color-alert-fill)" stroke="var(--color-alert-stroke)" stroke-width="1.5"/>
+    <text y="-6" fill="var(--text)" font-size="10" font-weight="600" text-anchor="middle">用户关闭窗口?</text>
+  </g>
+
+  <!-- macOS 分支 (右侧) -->
+  <line x1="405" y1="770" x2="520" y2="770" stroke="var(--color-alert-stroke)" stroke-width="2" marker-end="url(#arrow-primary)"/>
+  <text x="460" y="762" fill="var(--color-alert-stroke)" font-size="7" font-weight="600" text-anchor="middle">macOS</text>
+
+  <rect x="530" y="800" width="170" height="70" rx="6" fill="var(--mask)"/>
+  <rect x="530" y="800" width="170" height="70" rx="6" fill="var(--color-neutral-fill)" stroke="var(--color-neutral-stroke)" stroke-width="1.5"/>
+  <text x="615" y="828" fill="var(--text)" font-size="11" font-weight="600" text-anchor="middle">app 保持运行</text>
+  <text x="615" y="842" fill="var(--text-muted)" font-size="8" text-anchor="middle">dock 图标点击 activate</text>
+
+  <!-- macOS 回到 createWindow -->
+  <line x1="530" y1="870" x2="360" y2="870" stroke="var(--color-primary-stroke)" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrow-open)"/>
+  <text x="440" y="862" fill="var(--color-primary-stroke)" font-size="7" font-weight="600" text-anchor="middle">重新创建窗口</text>
+  <line x1="400" y1="870" x2="360" y2="380" stroke="var(--color-primary-stroke)" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrow-open)"/>
+
+  <!-- win/linux 分支 (左侧) -->
+  <line x1="315" y1="770" x2="200" y2="770" stroke="var(--color-alert-stroke)" stroke-width="2" marker-end="url(#arrow-primary)"/>
+  <text x="255" y="762" fill="var(--color-alert-stroke)" font-size="7" font-weight="600" text-anchor="middle">Windows / Linux</text>
+
+  <rect x="20" y="800" width="170" height="70" rx="6" fill="var(--mask)"/>
+  <rect x="20" y="800" width="170" height="70" rx="6" fill="var(--color-neutral-fill)" stroke="var(--color-neutral-stroke)" stroke-width="1.5"/>
+  <text x="105" y="828" fill="var(--text)" font-size="11" font-weight="600" text-anchor="middle">window-all-closed</text>
+  <text x="105" y="842" fill="var(--text-muted)" font-size="8" text-anchor="middle">app.quit() 退出</text>
+
+  <!-- Line to End -->
+  <line x1="105" y1="870" x2="105" y2="920" stroke="var(--color-alert-stroke)" stroke-width="2" marker-end="url(#arrow-primary)"/>
+
+  <!-- End -->
+  <ellipse cx="105" cy="950" rx="30" ry="30" fill="var(--mask)"/>
+  <ellipse cx="105" cy="950" rx="30" ry="30" fill="var(--color-alert-fill)" stroke="var(--color-alert-stroke)" stroke-width="1.5"/>
+  <circle cx="105" cy="950" r="14" fill="none" stroke="var(--color-alert-stroke)" stroke-width="2"/>
+  <text x="105" y="954" fill="var(--text)" font-size="10" font-weight="600" text-anchor="middle">退出</text>
+
+  <!-- Legend -->
+  <rect x="20" y="990" width="260" height="25" rx="6" fill="var(--mask)"/>
+  <text x="42" y="1008" fill="var(--text-muted)" font-size="8" font-weight="600">图例：实心=主流程　虚线=macOS 回环</text>
+
+  <!-- Title -->
+  <text x="20" y="34" class="title">BrowserWindow 窗口生命周期</text>
+  <text x="20" y="52" fill="var(--text-muted)" font-size="9">macOS 与 Windows / Linux 在关闭行为上的平台差异</text>
+</svg>

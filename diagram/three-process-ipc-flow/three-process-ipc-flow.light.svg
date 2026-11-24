@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640">
+  <style>:root {
+    --bg: #f8fafc;
+    --bg-grid: #e2e8f0;
+    --mask: #f8fafc;
+    --text: #0f172a;
+    --text-muted: #475569;
+    --arrow: #64748b;
+    --color-primary-fill: rgba(6,182,212,0.12);
+    --color-primary-stroke: #0891b2;
+    --color-secondary-fill: rgba(5,150,105,0.12);
+    --color-secondary-stroke: #059669;
+    --color-tertiary-fill: rgba(124,58,237,0.12);
+    --color-tertiary-stroke: #7c3aed;
+    --color-accent-fill: rgba(217,119,6,0.12);
+    --color-accent-stroke: #d97706;
+    --color-alert-fill: rgba(225,29,72,0.12);
+    --color-alert-stroke: #e11d48;
+    --color-connector-fill: rgba(234,88,12,0.12);
+    --color-connector-stroke: #ea580c;
+    --color-neutral-fill: rgba(100,116,139,0.12);
+    --color-neutral-stroke: #64748b;
+    --color-highlight-fill: rgba(59,130,246,0.12);
+    --color-highlight-stroke: #3b82f6;
+}
+    text { font-family: 'JetBrains Mono', 'Noto Sans SC', 'PingFang SC', sans-serif; }
+    .title { font-size: 16px; font-weight: 700; fill: var(--text); }
+    .comp-name { font-size: 11px; font-weight: 600; fill: var(--text); }
+    .comp-sub { font-size: 8px; fill: var(--text-muted); }
+    .region-label { font-size: 9px; font-weight: 600; fill: var(--text); }
+    .arrow-label { font-size: 7px; fill: var(--text-muted); }
+    .legend-item { font-size: 9px; fill: var(--text); }
+  </style>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="var(--bg-grid)" stroke-width="0.5"/>
+    </pattern>
+    <marker id="arrow-primary" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="var(--color-primary-stroke)"/>
+    </marker>
+    <marker id="arrow-tertiary" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polyline points="0 0, 10 3.5, 0 7" fill="none" stroke="var(--color-tertiary-stroke)" stroke-width="1.5"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="var(--bg)"/>
+  <rect width="100%" height="100%" fill="url(#grid)"/>
+
+  <!-- Region: Renderer Process -->
+  <rect x="30" y="60" width="280" height="500" rx="12" fill="none" stroke="var(--color-primary-stroke)" stroke-width="1.5" stroke-dasharray="8,4"/>
+  <text x="52" y="82" fill="var(--color-primary-stroke)" font-size="9" font-weight="600">Renderer Process</text>
+  <text x="52" y="96" fill="var(--text-muted)" font-size="8">Chromium / Vue3 + Pinia</text>
+
+  <!-- Region: Preload -->
+  <rect x="330" y="60" width="340" height="500" rx="12" fill="none" stroke="var(--color-connector-stroke)" stroke-width="1.5" stroke-dasharray="8,4"/>
+  <text x="352" y="82" fill="var(--color-connector-stroke)" font-size="9" font-weight="600">Preload</text>
+  <text x="352" y="96" fill="var(--text-muted)" font-size="8">contextBridge 桥 / 白名单 API</text>
+
+  <!-- Region: Main Process -->
+  <rect x="690" y="60" width="280" height="500" rx="12" fill="none" stroke="var(--color-secondary-stroke)" stroke-width="1.5" stroke-dasharray="8,4"/>
+  <text x="712" y="82" fill="var(--color-secondary-stroke)" font-size="9" font-weight="600">Main Process</text>
+  <text x="712" y="96" fill="var(--text-muted)" font-size="8">Node.js / app + BrowserWindow</text>
+
+  <!-- Arrows (main flow, solid) -->
+  <line x1="170" y1="250" x2="330" y2="250" stroke="var(--color-primary-stroke)" stroke-width="2" marker-end="url(#arrow-primary)"/>
+  <text x="245" y="242" fill="var(--color-primary-stroke)" font-size="7" font-weight="600" text-anchor="middle">invoke</text>
+  <line x1="670" y1="250" x2="690" y2="250" stroke="var(--color-primary-stroke)" stroke-width="2" marker-end="url(#arrow-primary)"/>
+  <text x="675" y="242" fill="var(--color-primary-stroke)" font-size="7" font-weight="600" text-anchor="middle">handle</text>
+  <line x1="830" y1="300" x2="830" y2="360" stroke="var(--color-primary-stroke)" stroke-width="2" marker-end="url(#arrow-primary)"/>
+  <text x="838" y="326" fill="var(--color-primary-stroke)" font-size="7" font-weight="600">原生 API</text>
+
+  <!-- Arrows (return, dashed) -->
+  <line x1="830" y1="220" x2="670" y2="220" stroke="var(--color-tertiary-stroke)" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrow-tertiary)"/>
+  <text x="745" y="212" fill="var(--color-tertiary-stroke)" font-size="7" font-weight="600" text-anchor="middle">返回结果</text>
+  <line x1="330" y1="220" x2="170" y2="220" stroke="var(--color-tertiary-stroke)" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrow-tertiary)"/>
+  <text x="245" y="212" fill="var(--color-tertiary-stroke)" font-size="7" font-weight="600" text-anchor="middle">回调</text>
+
+  <!-- Mask + Component: Renderer -->
+  <rect x="70" y="120" width="220" height="70" rx="6" fill="var(--mask)"/>
+  <rect x="70" y="120" width="220" height="70" rx="6" fill="var(--color-primary-fill)" stroke="var(--color-primary-stroke)" stroke-width="1.5"/>
+  <text x="180" y="148" fill="var(--text)" font-size="11" font-weight="600" text-anchor="middle">Vue3 App</text>
+  <text x="180" y="162" fill="var(--text-muted)" font-size="8" text-anchor="middle">界面渲染 + 状态管理</text>
+
+  <rect x="70" y="240" width="220" height="70" rx="6" fill="var(--mask)"/>
+  <rect x="70" y="240" width="220" height="70" rx="6" fill="var(--color-primary-fill)" stroke="var(--color-primary-stroke)" stroke-width="1.5"/>
+  <text x="180" y="268" fill="var(--text)" font-size="11" font-weight="600" text-anchor="middle">window.electronAPI</text>
+  <text x="180" y="282" fill="var(--text-muted)" font-size="8" text-anchor="middle">contextBridge 暴露的白名单 API</text>
+
+  <rect x="70" y="360" width="220" height="70" rx="6" fill="var(--mask)"/>
+  <rect x="70" y="360" width="220" height="70" rx="6" fill="var(--color-primary-fill)" stroke="var(--color-primary-stroke)" stroke-width="1.5"/>
+  <text x="180" y="388" fill="var(--text)" font-size="11" font-weight="600" text-anchor="middle">Pinia</text>
+  <text x="180" y="402" fill="var(--text-muted)" font-size="8" text-anchor="middle">渲染进程状态</text>
+
+  <!-- Mask + Component: Preload -->
+  <rect x="380" y="140" width="240" height="70" rx="6" fill="var(--mask)"/>
+  <rect x="380" y="140" width="240" height="70" rx="6" fill="var(--color-connector-fill)" stroke="var(--color-connector-stroke)" stroke-width="1.5"/>
+  <text x="500" y="168" fill="var(--text)" font-size="11" font-weight="600" text-anchor="middle">contextBridge.exposeInMainWorld</text>
+  <text x="500" y="182" fill="var(--text-muted)" font-size="8" text-anchor="middle">只暴露白名单，禁止裸 ipcRenderer</text>
+
+  <rect x="380" y="260" width="240" height="70" rx="6" fill="var(--mask)"/>
+  <rect x="380" y="260" width="240" height="70" rx="6" fill="var(--color-connector-fill)" stroke="var(--color-connector-stroke)" stroke-width="1.5"/>
+  <text x="500" y="288" fill="var(--text)" font-size="11" font-weight="600" text-anchor="middle">IPC_CHANNELS</text>
+  <text x="500" y="302" fill="var(--text-muted)" font-size="8" text-anchor="middle">主渲染共享通道常量</text>
+
+  <!-- Mask + Component: Main -->
+  <rect x="730" y="120" width="220" height="70" rx="6" fill="var(--mask)"/>
+  <rect x="730" y="120" width="220" height="70" rx="6" fill="var(--color-secondary-fill)" stroke="var(--color-secondary-stroke)" stroke-width="1.5"/>
+  <text x="840" y="148" fill="var(--text)" font-size="11" font-weight="600" text-anchor="middle">ipcMain</text>
+  <text x="840" y="162" fill="var(--text-muted)" font-size="8" text-anchor="middle">主进程 IPC 处理器</text>
+
+  <rect x="730" y="240" width="220" height="70" rx="6" fill="var(--mask)"/>
+  <rect x="730" y="240" width="220" height="70" rx="6" fill="var(--color-secondary-fill)" stroke="var(--color-secondary-stroke)" stroke-width="1.5"/>
+  <text x="840" y="268" fill="var(--text)" font-size="11" font-weight="600" text-anchor="middle">BrowserWindow</text>
+  <text x="840" y="282" fill="var(--text-muted)" font-size="8" text-anchor="middle">窗口管理与生命周期</text>
+
+  <rect x="730" y="360" width="220" height="70" rx="6" fill="var(--mask)"/>
+  <rect x="730" y="360" width="220" height="70" rx="6" fill="var(--color-secondary-fill)" stroke="var(--color-secondary-stroke)" stroke-width="1.5"/>
+  <text x="840" y="388" fill="var(--text)" font-size="11" font-weight="600" text-anchor="middle">app</text>
+  <text x="840" y="402" fill="var(--text-muted)" font-size="8" text-anchor="middle">应用生命周期</text>
+
+  <!-- Legend -->
+  <rect x="30" y="580" width="160" height="50" rx="6" fill="var(--mask)"/>
+  <text x="52" y="600" fill="var(--text-muted)" font-size="8" font-weight="600">图例</text>
+  <line x1="52" y1="612" x2="72" y2="612" stroke="var(--color-primary-stroke)" stroke-width="2" marker-end="url(#arrow-primary)"/>
+  <text x="78" y="616" fill="var(--text)" font-size="8">主流向 (实心)</text>
+  <line x1="52" y1="624" x2="72" y2="624" stroke="var(--color-tertiary-stroke)" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrow-tertiary)"/>
+  <text x="78" y="628" fill="var(--text)" font-size="8">返回流向 (虚线)</text>
+
+  <!-- Title -->
+  <text x="30" y="34" class="title">Electron 三进程与 IPC 数据流</text>
+  <text x="30" y="50" fill="var(--text-muted)" font-size="9">渲染发起 → 预加载桥接 → 主进程处理 → 结果返回</text>
+</svg>
