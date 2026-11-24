@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Tray, nativeImage, screen, dialog } from 'electron'
+import { app, BrowserWindow, ipcMain, Tray, nativeImage, screen, dialog, Menu, globalShortcut, type MenuItemConstructorOptions } from 'electron'
 import { join } from 'node:path'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { IPC_CHANNELS } from '../../shared/ipc'
@@ -101,6 +101,8 @@ function createTray() {
 app.whenReady().then(() => {
   createWindow()
   createTray()
+  setupMenu()
+  registerGlobalShortcut()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -110,6 +112,45 @@ app.whenReady().then(() => {
     }
   })
 })
+
+function setupMenu() {
+  const template: MenuItemConstructorOptions[] = [
+    {
+      label: 'DeskMind',
+      submenu: [
+        { role: 'about' },
+        { type: 'separator' },
+        { role: 'quit' }
+      ]
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'selectAll' }
+      ]
+    }
+  ]
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+}
+
+function registerGlobalShortcut() {
+  const registered = globalShortcut.register('CommandOrControl+K', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore()
+      mainWindow.show()
+      mainWindow.focus()
+    }
+  })
+  if (!registered) {
+    // 注册失败（如权限不足 / 冲突）记日志
+  }
+}
 
 // 单实例锁：第二次启动时激活已有窗口并退出新实例
 const gotTheLock = app.requestSingleInstanceLock()
