@@ -1,25 +1,19 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import { IPC_CHANNELS } from '../../shared/ipc'
+import { IPC_CHANNELS, WinState } from '../../shared/ipc'
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  getVersion: () => ipcRenderer.invoke(IPC_CHANNELS.APP_GET_VERSION),
-  getWinState: () => ipcRenderer.invoke(IPC_CHANNELS.WIN_GET_STATE),
-  setWinState: (state: unknown) => ipcRenderer.send(IPC_CHANNELS.WIN_SET_STATE, state),
-  toggleWin: () => ipcRenderer.send(IPC_CHANNELS.WIN_TOGGLE),
-  invoke: <T = unknown>(channel: string, ...args: unknown[]): Promise<T> =>
-    ipcRenderer.invoke(channel, ...args)
+  getVersion: (): Promise<string> =>
+    ipcRenderer.invoke(IPC_CHANNELS.APP_GET_VERSION) as Promise<string>,
+  getWinState: (): Promise<WinState | null> =>
+    ipcRenderer.invoke(IPC_CHANNELS.WIN_GET_STATE) as Promise<WinState | null>,
+  setWinState: (state: WinState) => ipcRenderer.send(IPC_CHANNELS.WIN_SET_STATE, state),
+  toggleWin: () => ipcRenderer.send(IPC_CHANNELS.WIN_TOGGLE)
 })
 
 export type ElectronAPI = {
   getVersion: () => Promise<string>
-  getWinState: () => Promise<{
-    x: number
-    y: number
-    width: number
-    height: number
-    maximized: boolean
-  } | null>
-  setWinState: (state: unknown) => void
+  getWinState: () => Promise<WinState | null>
+  setWinState: (state: WinState) => void
   toggleWin: () => void
 }
 

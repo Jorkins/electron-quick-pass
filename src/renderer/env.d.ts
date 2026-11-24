@@ -6,16 +6,12 @@ declare module '*.vue' {
   export default component
 }
 
+import type { WinState } from '../../shared/ipc'
+
 export type ElectronAPI = {
   getVersion: () => Promise<string>
-  getWinState: () => Promise<{
-    x: number
-    y: number
-    width: number
-    height: number
-    maximized: boolean
-  } | null>
-  setWinState: (state: unknown) => void
+  getWinState: () => Promise<WinState | null>
+  setWinState: (state: WinState) => void
   toggleWin: () => void
 }
 

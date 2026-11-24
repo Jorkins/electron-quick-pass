@@ -6,3 +6,11 @@ export const IPC_CHANNELS = {
 } as const
 
 export type IPC_CHANNELS = typeof IPC_CHANNELS
+
+export interface WinState {
+  x: number
+  y: number
+  width: number
+  height: number
+  maximized: boolean
+}
