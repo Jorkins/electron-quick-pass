@@ -13,6 +13,7 @@ export type ElectronAPI = {
   getWinState: () => Promise<WinState | null>
   setWinState: (state: WinState) => void
   toggleWin: () => void
+  onWinToken: (cb: (token: string) => void) => void
 }
 
 declare global {

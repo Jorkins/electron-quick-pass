@@ -167,3 +167,21 @@ ipcMain.on(IPC_CHANNELS.WIN_TOGGLE, () => {
   if (mainWindow.isMinimized()) mainWindow.restore()
   mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show()
 })
+
+/**
+ * 流式响应：请求—响应 + 推送（主 → 渲染）。
+ * 渲染端调用 chat:stream，主进程收到后逐 token 通过 webContents.send 推给渲染端。
+ */
+ipcMain.handle(IPC_CHANNELS.CHAT_STREAM, async (event, request: { prompt: string }) => {
+  const win = BrowserWindow.fromWebContents(event.sender) as BrowserWindow
+  if (!win) return null
+
+  // TODO: 替换为真实模型流式调用；当前为演示 token 序列
+  const tokens = ['嗯', '，', '我', '的', '名', '叫', 'D', 'e', 's', 'k', 'M', 'i', 'n', 'd', '。', ' ', '你', '想', '聊', '点', '儿', '的', '？']
+  for (const t of tokens) {
+    win.webContents.send(IPC_CHANNELS.WIN_TOKEN, t)
+    await new Promise((r) => setTimeout(r, 20))
+  }
+
+  return null
+})

@@ -8,11 +8,15 @@ const version = computed(() => appStore.version)
 const loading = computed(() => appStore.loading)
 
 const winState = ref<WinState | null>(null)
+const streamText = ref<string>('')
 const win = window as unknown as Window & typeof globalThis
 
 onMounted(async () => {
   await appStore.init()
   winState.value = await win.electronAPI?.getWinState?.() ?? null
+  win.electronAPI.onWinToken((token: string) => {
+    streamText.value += token
+  })
 
   win.addEventListener('resize', reportState)
   win.addEventListener('move', reportState)
@@ -43,6 +47,7 @@ onUnmounted(() => {
     <p>Electron + Vue3 + TypeScript</p>
     <p v-if="loading">正在初始化……</p>
     <p v-else>应用版本：{{ version }}</p>
+    <p v-if="streamText">{{ streamText }}</p>
     <div class="card" v-if="winState">
       <h3>窗口状态</h3>
       <p>位置：({{ winState.x }}, {{ winState.y }})</p>

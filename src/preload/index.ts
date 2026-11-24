@@ -7,7 +7,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getWinState: (): Promise<WinState | null> =>
     ipcRenderer.invoke(IPC_CHANNELS.WIN_GET_STATE) as Promise<WinState | null>,
   setWinState: (state: WinState) => ipcRenderer.send(IPC_CHANNELS.WIN_SET_STATE, state),
-  toggleWin: () => ipcRenderer.send(IPC_CHANNELS.WIN_TOGGLE)
+  toggleWin: () => ipcRenderer.send(IPC_CHANNELS.WIN_TOGGLE),
+  onWinToken: (cb: (token: string) => void) => {
+    ipcRenderer.on(IPC_CHANNELS.WIN_TOKEN, (_event, token: string) => cb(token))
+  }
 })
 
 export type ElectronAPI = {
@@ -15,6 +18,7 @@ export type ElectronAPI = {
   getWinState: () => Promise<WinState | null>
   setWinState: (state: WinState) => void
   toggleWin: () => void
+  onWinToken: (cb: (token: string) => void) => void
 }
 
 declare global {
