@@ -29,3 +29,12 @@ pnpm build:linux    # 打包 Linux
 ```
 
 > 配套源码：`https://github.com/JorkIns/electron-quick-pass`，全程单工程、单 `main` 分支，逐关累加。
+
+## 关注作者
+
+
+如果你对 AI 及本项目感兴趣，欢迎关注我的微信公众号 **码上栈记**，将持续带来更多高质量文章和干货。
+
+<p align="center">
+  <img src="docs/images/wechat-follow-banner@2x.png" alt="微信搜一搜：码上栈记" width="480">
+</p>
