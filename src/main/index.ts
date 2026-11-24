@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Tray, nativeImage, screen, dialog, Menu, globalShortcut, type MenuItemConstructorOptions } from 'electron'
+import { app, BrowserWindow, ipcMain, Tray, nativeImage, screen, dialog, Menu, globalShortcut, type MenuItemConstructorOptions, session } from 'electron'
 import { join } from 'node:path'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { IPC_CHANNELS } from '../../shared/ipc'
@@ -82,6 +82,18 @@ function createWindow() {
   if (saved.maximized) {
     win.maximize()
   }
+
+  const ses = session.defaultSession as unknown as {
+    setCSP?: (policy: string) => Promise<void>
+  }
+  void ses.setCSP?.(
+    "default-src file:; script-src file: 'self'; style-src file: 'self' 'unsafe-inline'; img-src file: data:"
+  )
+  win.webContents.on('will-navigate', (event, url) => {
+    if (url.startsWith('file://') || url.startsWith('http://localhost:5123')) return
+    event.preventDefault()
+  })
+  win.webContents.setWindowOpenHandler(({ url }) => ({ action: 'deny' }))
 
   mainWindow = win
 }
