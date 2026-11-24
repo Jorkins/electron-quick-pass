@@ -8,3 +8,7 @@ out
 *.log
 npm-debug.log*
 pnpm-debug.log*
+
+# 文档相关不推送到源码仓库（仅保留本地）
+articles/
+diagram/
