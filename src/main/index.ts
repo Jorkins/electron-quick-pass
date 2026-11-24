@@ -7,6 +7,7 @@ app.setName('DeskMind')
 
 let mainWindow: BrowserWindow | null = null
 let tray: Tray | null = null
+let settingsWindow: BrowserWindow | null = null
 const isMac = process.platform === 'darwin'
 
 // 窗口状态持久化文件路径（用户数据目录下）
@@ -98,11 +99,34 @@ function createTray() {
   })
 }
 
+function createSettingsWindow() {
+  const settings = new BrowserWindow({
+    width: 800,
+    height: 600,
+    show: true,
+    title: 'DeskMind - Settings',
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false
+    }
+  })
+  settings.loadURL(!app.isPackaged ? 'http://localhost:5123/renderer' : join(__dirname, '../renderer/index.html'))
+  settingsWindow = settings
+}
+
 app.whenReady().then(() => {
   createWindow()
   createTray()
   setupMenu()
   registerGlobalShortcut()
+  createSettingsWindow()
+
+  // 主窗口 -> 设置窗口（示例通信）
+  if (mainWindow) {
+    mainWindow.webContents.send(IPC_CHANNELS.SETTINGS_OPEN, { from: 'main' })
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

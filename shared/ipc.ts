@@ -5,7 +5,8 @@ export const IPC_CHANNELS = {
   WIN_TOGGLE: 'win:toggle',
   CHAT_STREAM: 'chat:stream',
   WIN_TOKEN: 'win:token',
-  FILE_OPEN_DIALOG: 'file:openDialog'
+  FILE_OPEN_DIALOG: 'file:openDialog',
+  SETTINGS_OPEN: 'settings:open'
 } as const
 
 export type IPC_CHANNELS = typeof IPC_CHANNELS
