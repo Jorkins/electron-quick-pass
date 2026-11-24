@@ -1,13 +1,57 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, Tray, nativeImage, screen } from 'electron'
 import { join } from 'node:path'
-import { isDev } from '@electron-toolkit/utils'
+import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { IPC_CHANNELS } from '../../shared/ipc'
 
 app.setName('DeskMind')
 
+let mainWindow: BrowserWindow | null = null
+let tray: Tray | null = null
+const isMac = process.platform === 'darwin'
+
+// 窗口状态持久化文件路径（用户数据目录下）
+const statePath = join(app.getPath('userData'), 'window-state.json')
+
+interface WindowState {
+  x?: number
+  y?: number
+  width: number
+  height: number
+  maximized: boolean
+}
+
+function loadWindowState(): WindowState {
+  const defaults: WindowState = { width: 900, height: 670, maximized: false }
+  try {
+    if (existsSync(statePath)) {
+      const saved = JSON.parse(readFileSync(statePath, 'utf-8'))
+      return { ...defaults, ...saved }
+    }
+  } catch {
+    // 忽略读取错误，使用默认值
+  }
+  return defaults
+}
+
+function saveWindowState(win: BrowserWindow) {
+  try {
+    const { x, y, width, height } = win.getBounds()
+    const maximized = win.isMaximized()
+    writeFileSync(statePath, JSON.stringify({ x, y, width, height, maximized }), 'utf-8')
+  } catch {
+    // 忽略写入错误
+  }
+}
+
 function createWindow() {
+  const saved = loadWindowState()
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize
+
   const win = new BrowserWindow({
-    width: 900,
-    height: 670,
+    x: saved.x,
+    y: saved.y,
+    width: Math.min(saved.width, width),
+    height: Math.min(saved.height, height),
     show: false,
     autoHideMenuBar: true,
     title: 'DeskMind',
@@ -23,26 +67,76 @@ function createWindow() {
     win.show()
   })
 
-  if (isDev) {
+  // 窗口关闭时保存状态
+  win.on('close', () => {
+    saveWindowState(win)
+  })
+
+  if (!app.isPackaged) {
     win.loadURL('http://localhost:5123/renderer')
   } else {
     win.loadFile(join(__dirname, '../renderer/index.html'))
   }
+
+  if (saved.maximized) {
+    win.maximize()
+  }
+
+  mainWindow = win
+}
+
+function createTray() {
+  const icon = nativeImage.createEmpty()
+  tray = new Tray(icon)
+  tray.setToolTip('DeskMind')
+  tray.on('click', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore()
+      mainWindow.show()
+      mainWindow.focus()
+    }
+  })
 }
 
 app.whenReady().then(() => {
   createWindow()
+  createTray()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow()
+    } else if (mainWindow) {
+      mainWindow.show()
     }
   })
 })
 
+// 单实例锁：第二次启动时激活已有窗口并退出新实例
+const gotTheLock = app.requestSingleInstanceLock()
+
+if (!gotTheLock) {
+  app.quit()
+} else {
+  app.on('second-instance', (event, argv, cwd) => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore()
+      mainWindow.show()
+      mainWindow.focus()
+    }
+  })
+}
+
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  // macOS：用户通常在 Cmd+Q 才退出，红点× 只关窗口不退出
+  // Windows / Linux：所有窗口关闭则退出应用
+  if (!isMac) {
     app.quit()
+  }
+})
+
+app.on('before-quit', () => {
+  if (tray) {
+    tray.destroy()
   }
 })
 
@@ -50,4 +144,26 @@ app.on('window-all-closed', () => {
  * 白名单 IPC：渲染进程通过 preload 的 contextBridge 调用。
  * 所有渲染进程可触发的通道必须在此显式注册，禁止裸字符串通道。
  */
-ipcMain.handle('app:getVersion', () => app.getVersion())
+ipcMain.handle(IPC_CHANNELS.APP_GET_VERSION, () => app.getVersion())
+ipcMain.handle(IPC_CHANNELS.WIN_GET_STATE, () => {
+  if (!mainWindow) return null
+  const { x, y, width, height } = mainWindow.getBounds()
+  return { x, y, width, height, maximized: mainWindow.isMaximized() }
+})
+ipcMain.on(IPC_CHANNELS.WIN_SET_STATE, (event, state: unknown) => {
+  if (!mainWindow) return
+  const s = state as Partial<WindowState>
+  if (s.maximized) {
+    mainWindow.maximize()
+  } else {
+    mainWindow.unmaximize()
+    if (s.x !== undefined && s.y !== undefined && s.width && s.height) {
+      mainWindow.setBounds(s)
+    }
+  }
+})
+ipcMain.on(IPC_CHANNELS.WIN_TOGGLE, () => {
+  if (!mainWindow) return
+  if (mainWindow.isMinimized()) mainWindow.restore()
+  mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show()
+})
