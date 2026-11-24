@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, Tray, nativeImage, screen, dialog, Menu, globalShortcut, type MenuItemConstructorOptions, session, safeStorage } from 'electron'
+import { autoUpdater } from 'electron-updater'
 import { join } from 'node:path'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { DatabaseSync } from 'node:sqlite'
@@ -147,7 +148,12 @@ function createSettingsWindow() {
   settingsWindow = settings
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  await autoUpdater.checkForUpdates()
+  autoUpdater.on('update-downloaded', () => {
+    autoUpdater.quitAndInstall()
+  })
+
   createWindow()
   createTray()
   setupMenu()
