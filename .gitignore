@@ -1,0 +1,10 @@
+node_modules
+dist
+out
+*.local
+.DS_Store
+.idea
+.vscode
+*.log
+npm-debug.log*
+pnpm-debug.log*
