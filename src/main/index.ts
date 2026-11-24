@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Tray, nativeImage, screen } from 'electron'
+import { app, BrowserWindow, ipcMain, Tray, nativeImage, screen, dialog } from 'electron'
 import { join } from 'node:path'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { IPC_CHANNELS } from '../../shared/ipc'
@@ -185,3 +185,20 @@ ipcMain.handle(IPC_CHANNELS.CHAT_STREAM, async (event, request: { prompt: string
 
   return null
 })
+
+ipcMain.handle(
+  IPC_CHANNELS.FILE_OPEN_DIALOG,
+  async (
+    event,
+    filter?: { name: string; extensions: string[] }
+  ): Promise<string | null> => {
+    const win = BrowserWindow.fromWebContents(event.sender) as BrowserWindow
+    if (!win) return null
+    const result = await dialog.showOpenDialog(win, {
+      properties: ['openFile'],
+      filters: filter ? [{ name: filter.name, extensions: filter.extensions }] : undefined
+    })
+    if (result.canceled) return null
+    return result.filePaths[0] ?? null
+  }
+)
