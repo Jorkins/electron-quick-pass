@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import { IPC_CHANNELS, WinState } from '../../shared/ipc'
+import { IPC_CHANNELS, WinState, type SessionPayload } from '../../shared/ipc'
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getVersion: (): Promise<string> =>
@@ -10,7 +10,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   toggleWin: () => ipcRenderer.send(IPC_CHANNELS.WIN_TOGGLE),
   onWinToken: (cb: (token: string) => void) => {
     ipcRenderer.on(IPC_CHANNELS.WIN_TOKEN, (_event, token: string) => cb(token))
-  }
+  },
+  saveSession: (payload: SessionPayload) => ipcRenderer.invoke(IPC_CHANNELS.DB_SAVE_SESSION, payload),
+  loadSession: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.DB_LOAD_SESSION, id)
 })
 
 export type ElectronAPI = {
@@ -19,6 +21,8 @@ export type ElectronAPI = {
   setWinState: (state: WinState) => void
   toggleWin: () => void
   onWinToken: (cb: (token: string) => void) => void
+  saveSession: (payload: SessionPayload) => Promise<void>
+  loadSession: (id: string) => Promise<Array<{ role: string; content: string }>>
 }
 
 declare global {

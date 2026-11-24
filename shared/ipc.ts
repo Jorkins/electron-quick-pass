@@ -6,15 +6,30 @@ export const IPC_CHANNELS = {
   CHAT_STREAM: 'chat:stream',
   WIN_TOKEN: 'win:token',
   FILE_OPEN_DIALOG: 'file:openDialog',
-  SETTINGS_OPEN: 'settings:open'
+  SETTINGS_OPEN: 'settings:open',
+  DB_SAVE_SESSION: 'db:saveSession',
+  DB_LOAD_SESSION: 'db:loadSession'
 } as const
 
 export type IPC_CHANNELS = typeof IPC_CHANNELS
 
 export interface WinState {
   x: number
-  y: number;
-  width: number;
-  height: number;
-  maximized: boolean;
+  y: number
+  width: number
+  height: number
+  maximized: boolean
+}
+
+export type ChatRole = 'user' | 'assistant' | 'system'
+
+export interface ChatMessage {
+  role: ChatRole
+  content: string
+}
+
+export interface SessionPayload {
+  id: string
+  title: string
+  messages: ChatMessage[]
 }

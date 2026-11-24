@@ -6,7 +6,7 @@ declare module '*.vue' {
   export default component
 }
 
-import type { WinState } from '../../shared/ipc'
+import type { WinState, type SessionPayload } from '../../shared/ipc'
 
 export type ElectronAPI = {
   getVersion: () => Promise<string>
@@ -14,6 +14,8 @@ export type ElectronAPI = {
   setWinState: (state: WinState) => void
   toggleWin: () => void
   onWinToken: (cb: (token: string) => void) => void
+  saveSession: (payload: SessionPayload) => Promise<void>
+  loadSession: (id: string) => Promise<Array<{ role: string; content: string }>>
 }
 
 declare global {

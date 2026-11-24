@@ -1,7 +1,8 @@
 import { app, BrowserWindow, ipcMain, Tray, nativeImage, screen, dialog, Menu, globalShortcut, type MenuItemConstructorOptions, session } from 'electron'
 import { join } from 'node:path'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
-import { IPC_CHANNELS } from '../../shared/ipc'
+import { DatabaseSync } from 'node:sqlite'
+import { IPC_CHANNELS, type SessionPayload } from '../../shared/ipc'
 
 app.setName('DeskMind')
 
@@ -203,6 +204,30 @@ if (!gotTheLock) {
   })
 }
 
+// 本地数据库（SQLite，通过 node:sqlite 访问 userData 目录）
+const dbPath = join(app.getPath('userData'), 'desk-mind.db')
+const db = new DatabaseSync(dbPath)
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS conversations (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+  )
+`)
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    conversation_id TEXT NOT NULL,
+    role TEXT NOT NULL,
+    content TEXT NOT NULL,
+    token_count INTEGER,
+    created_at INTEGER NOT NULL
+  )
+`)
+
 app.on('window-all-closed', () => {
   // macOS：用户通常在 Cmd+Q 才退出，红点× 只关窗口不退出
   // Windows / Linux：所有窗口关闭则退出应用
@@ -215,6 +240,7 @@ app.on('before-quit', () => {
   if (tray) {
     tray.destroy()
   }
+  db.close()
 })
 
 /**
@@ -279,3 +305,31 @@ ipcMain.handle(
     return result.filePaths[0] ?? null
   }
 )
+
+/**
+ * 本地数据库：会话保存 / 读取（节点边界直连，渲染进程不感知存储细节）。
+ * 写入走主进程事务语义，避免半写入导致历史损坏。
+ */
+ipcMain.handle(IPC_CHANNELS.DB_SAVE_SESSION, async (_event, payload: SessionPayload) => {
+  const now = Date.now()
+  db.prepare(
+    'INSERT INTO conversations (id, title, created_at, updated_at) VALUES (?, ?, ?, ?) ' +
+      'ON CONFLICT(id) DO UPDATE SET title = excluded.title, updated_at = excluded.updated_at'
+  ).run(payload.id, payload.title, now, now)
+
+  const insert = db.prepare(
+    'INSERT INTO messages (conversation_id, role, content, token_count, created_at) VALUES (?, ?, ?, ?, ?)'
+  )
+  const messages = [...payload.messages]
+  for (const m of messages) {
+    insert.run(payload.id, m.role, m.content, m.content.length, now)
+  }
+  return null
+})
+
+ipcMain.handle(IPC_CHANNELS.DB_LOAD_SESSION, (event, id: string) => {
+  const rows = db
+    .prepare('SELECT role, content FROM messages WHERE conversation_id = ? ORDER BY id')
+    .all(id) as Array<{ role: string; content: string }>
+  return rows.map((r) => ({ role: r.role as SessionPayload['messages'][number]['role'], content: r.content }))
+})
