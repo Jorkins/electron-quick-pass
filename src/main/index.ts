@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Tray, nativeImage, screen, dialog, Menu, globalShortcut, type MenuItemConstructorOptions, session } from 'electron'
+import { app, BrowserWindow, ipcMain, Tray, nativeImage, screen, dialog, Menu, globalShortcut, type MenuItemConstructorOptions, session, safeStorage } from 'electron'
 import { join } from 'node:path'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { DatabaseSync } from 'node:sqlite'
@@ -13,6 +13,9 @@ const isMac = process.platform === 'darwin'
 
 // 窗口状态持久化文件路径（用户数据目录下）
 const statePath = join(app.getPath('userData'), 'window-state.json')
+
+// AI 密钥文件路径（内容为 safeStorage 加密后的 base64）
+const aiKeyPath = join(app.getPath('userData'), 'ai.key')
 
 interface WindowState {
   x?: number
@@ -42,6 +45,21 @@ function saveWindowState(win: BrowserWindow) {
     writeFileSync(statePath, JSON.stringify({ x, y, width, height, maximized }), 'utf-8')
   } catch {
     // 忽略写入错误
+  }
+}
+
+function setAiKey(key: string) {
+  const encrypted = safeStorage.encryptString(key)
+  writeFileSync(aiKeyPath, encrypted.toString('base64'))
+}
+
+function getAiKey(): string | null {
+  try {
+    if (!existsSync(aiKeyPath)) return null
+    const encrypted = readFileSync(aiKeyPath, 'utf-8')
+    return safeStorage.decryptString(Buffer.from(encrypted, 'base64'))
+  } catch {
+    return null
   }
 }
 
@@ -279,11 +297,62 @@ ipcMain.handle(IPC_CHANNELS.CHAT_STREAM, async (event, request: { prompt: string
   const win = BrowserWindow.fromWebContents(event.sender) as BrowserWindow
   if (!win) return null
 
-  // TODO: 替换为真实模型流式调用；当前为演示 token 序列
-  const tokens = ['嗯', '，', '我', '的', '名', '叫', 'D', 'e', 's', 'k', 'M', 'i', 'n', 'd', '。', ' ', '你', '想', '聊', '点', '儿', '的', '？']
-  for (const t of tokens) {
-    win.webContents.send(IPC_CHANNELS.WIN_TOKEN, t)
-    await new Promise((r) => setTimeout(r, 20))
+  const apiKey = getAiKey()
+  const endpoint = process.env.AI_API_URL || 'https://api.openai.com/v1/chat/completions'
+  const model = process.env.AI_MODEL || 'gpt-4o-mini'
+
+  if (!apiKey) {
+    win.webContents.send(IPC_CHANNELS.WIN_TOKEN, 'AI_NOT_CONFIGURED')
+    return null
+  }
+
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model,
+        stream: true,
+        temperature: 0.7,
+        messages: [{ role: 'user', content: request.prompt }]
+      })
+    })
+
+    if (!res.ok || !res.body) {
+      win.webContents.send(IPC_CHANNELS.WIN_TOKEN, 'AI_REQUEST_FAILED')
+      return null
+    }
+
+    const reader = (res.body as unknown as ReadableStream).getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    let streamDone = false
+
+    while (!streamDone) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() ?? ''
+      for (const line of lines) {
+        const trimmed = line.trim()
+        if (!trimmed.startsWith('data:')) continue
+        const data = trimmed.slice(6).trim()
+        if (data === '[DONE]') {
+          streamDone = true
+          break
+        }
+        try {
+          const json = JSON.parse(data)
+          const delta = json.choices?.[0]?.delta?.content
+          if (delta) win.webContents.send(IPC_CHANNELS.WIN_TOKEN, delta)
+        } catch {
+          // 忽略增量解析失败的行
+        }
+      }
+    }
+  } catch {
+    win.webContents.send(IPC_CHANNELS.WIN_TOKEN, 'AI_REQUEST_FAILED')
   }
 
   return null
@@ -305,6 +374,15 @@ ipcMain.handle(
     return result.filePaths[0] ?? null
   }
 )
+
+ipcMain.handle(IPC_CHANNELS.AI_SET_KEY, async (_event, key: string) => {
+  setAiKey(key)
+  return true
+})
+
+ipcMain.handle(IPC_CHANNELS.AI_GET_KEY_STATUS, async () => ({
+  hasKey: existsSync(aiKeyPath)
+}))
 
 /**
  * 本地数据库：会话保存 / 读取（节点边界直连，渲染进程不感知存储细节）。

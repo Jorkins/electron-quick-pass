@@ -14,6 +14,8 @@ export type ElectronAPI = {
   setWinState: (state: WinState) => void
   toggleWin: () => void
   onWinToken: (cb: (token: string) => void) => void
+  setAiKey: (key: string) => Promise<boolean>
+  getAiKeyStatus: () => Promise<{ hasKey: boolean }>
   saveSession: (payload: SessionPayload) => Promise<void>
   loadSession: (id: string) => Promise<Array<{ role: string; content: string }>>
 }
