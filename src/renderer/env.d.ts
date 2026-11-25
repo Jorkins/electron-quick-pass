@@ -18,6 +18,7 @@ export type ElectronAPI = {
   getAiKeyStatus: () => Promise<{ hasKey: boolean }>
   saveSession: (payload: SessionPayload) => Promise<void>
   loadSession: (id: string) => Promise<Array<{ role: string; content: string }>>
+  logError: (message: string) => void
 }
 
 declare global {

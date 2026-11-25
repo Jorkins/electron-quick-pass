@@ -10,7 +10,8 @@ export const IPC_CHANNELS = {
   DB_SAVE_SESSION: 'db:saveSession',
   DB_LOAD_SESSION: 'db:loadSession',
   AI_SET_KEY: 'ai:setKey',
-  AI_GET_KEY_STATUS: 'ai:getKeyStatus'
+  AI_GET_KEY_STATUS: 'ai:getKeyStatus',
+  LOG_ERROR: 'log:error'
 } as const
 
 export type IPC_CHANNELS = typeof IPC_CHANNELS

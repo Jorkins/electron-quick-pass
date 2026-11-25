@@ -1,7 +1,7 @@
-import { app, BrowserWindow, ipcMain, Tray, nativeImage, screen, dialog, Menu, globalShortcut, type MenuItemConstructorOptions, session, safeStorage } from 'electron'
+import { app, BrowserWindow, ipcMain, Tray, nativeImage, screen, dialog, Menu, globalShortcut, type MenuItemConstructorOptions, session, safeStorage, crashReporter } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import { join } from 'node:path'
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync } from 'node:fs'
 import { DatabaseSync } from 'node:sqlite'
 import { IPC_CHANNELS, type SessionPayload } from '../../shared/ipc'
 
@@ -17,6 +17,22 @@ const statePath = join(app.getPath('userData'), 'window-state.json')
 
 // AI 密钥文件路径（内容为 safeStorage 加密后的 base64）
 const aiKeyPath = join(app.getPath('userData'), 'ai.key')
+
+// 日志目录与主进程日志函数
+const logsDir = join(app.getPath('userData'), 'logs')
+mkdirSync(logsDir, { recursive: true })
+function log(msg: string) {
+  const line = `[${new Date().toISOString()}] ${msg}\n`
+  appendFileSync(join(logsDir, 'main.log'), line, { encoding: 'utf-8' })
+  console.log(line)
+}
+
+crashReporter.start({
+  companyName: 'DeskMind',
+  productName: 'DeskMind',
+  submitURL: '',
+  uploadToServer: false
+})
 
 interface WindowState {
   x?: number
@@ -389,6 +405,10 @@ ipcMain.handle(IPC_CHANNELS.AI_SET_KEY, async (_event, key: string) => {
 ipcMain.handle(IPC_CHANNELS.AI_GET_KEY_STATUS, async () => ({
   hasKey: existsSync(aiKeyPath)
 }))
+
+ipcMain.on(IPC_CHANNELS.LOG_ERROR, (_event, message: string) => {
+  log(`[renderer] ${message}`)
+})
 
 /**
  * 本地数据库：会话保存 / 读取（节点边界直连，渲染进程不感知存储细节）。
