@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Tray, nativeImage, screen, dialog, Menu, globalShortcut, type MenuItemConstructorOptions, session, safeStorage, crashReporter } from 'electron'
+import { app, BrowserWindow, ipcMain, Tray, nativeImage, screen, dialog, clipboard, Menu, globalShortcut, type MenuItemConstructorOptions, session, safeStorage, crashReporter } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import { join } from 'node:path'
 import { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync } from 'node:fs'
@@ -408,6 +408,20 @@ ipcMain.handle(IPC_CHANNELS.AI_GET_KEY_STATUS, async () => ({
 
 ipcMain.on(IPC_CHANNELS.LOG_ERROR, (_event, message: string) => {
   log(`[renderer] ${message}`)
+})
+
+ipcMain.handle(IPC_CHANNELS.CLIPBOARD_WRITE, (_event, text: string) => {
+  clipboard.writeText(text ?? '')
+  return true
+})
+
+ipcMain.handle(IPC_CHANNELS.CLIPBOARD_READ, () => {
+  return clipboard.readText()
+})
+
+ipcMain.handle(IPC_CHANNELS.SCREEN_INFO, () => {
+  const d = screen.getPrimaryDisplay()
+  return { width: d.size.width, height: d.size.height, scaleFactor: d.scaleFactor }
 })
 
 /**

@@ -19,6 +19,9 @@ export type ElectronAPI = {
   saveSession: (payload: SessionPayload) => Promise<void>
   loadSession: (id: string) => Promise<Array<{ role: string; content: string }>>
   logError: (message: string) => void
+  clipboardWrite: (text: string) => Promise<boolean>
+  clipboardRead: () => Promise<string>
+  screenInfo: () => Promise<{ width: number; height: number; scaleFactor: number }>
 }
 
 declare global {

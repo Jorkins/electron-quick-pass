@@ -15,7 +15,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getAiKeyStatus: () => ipcRenderer.invoke(IPC_CHANNELS.AI_GET_KEY_STATUS),
   saveSession: (payload: SessionPayload) => ipcRenderer.invoke(IPC_CHANNELS.DB_SAVE_SESSION, payload),
   loadSession: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.DB_LOAD_SESSION, id),
-  logError: (message: string) => ipcRenderer.send(IPC_CHANNELS.LOG_ERROR, message)
+  logError: (message: string) => ipcRenderer.send(IPC_CHANNELS.LOG_ERROR, message),
+  clipboardWrite: (text: string) => ipcRenderer.invoke(IPC_CHANNELS.CLIPBOARD_WRITE, text),
+  clipboardRead: () => ipcRenderer.invoke(IPC_CHANNELS.CLIPBOARD_READ) as Promise<string>,
+  screenInfo: () => ipcRenderer.invoke(IPC_CHANNELS.SCREEN_INFO) as Promise<{ width: number; height: number; scaleFactor: number }>
 })
 
 export type ElectronAPI = {
@@ -29,6 +32,9 @@ export type ElectronAPI = {
   saveSession: (payload: SessionPayload) => Promise<void>
   loadSession: (id: string) => Promise<Array<{ role: string; content: string }>>
   logError: (message: string) => void
+  clipboardWrite: (text: string) => Promise<boolean>
+  clipboardRead: () => Promise<string>
+  screenInfo: () => Promise<{ width: number; height: number; scaleFactor: number }>
 }
 
 declare global {
